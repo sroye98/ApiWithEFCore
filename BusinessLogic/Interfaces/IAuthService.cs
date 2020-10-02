@@ -37,7 +37,8 @@ namespace BusinessLogic.Interfaces
 
         Task<string> LoginAsync(
             string identifier,
-            string password);
+            string password,
+            string ipAddress);
 
         Task LogoutAsync();
 
@@ -58,6 +59,10 @@ namespace BusinessLogic.Interfaces
             string role,
             bool sendEmailConfirmation = true,
             bool sendPhoneConfirmation = true);
+
+        Task RefreshToken(
+            string refreshToken,
+            string ipAddress);
 
         Task ResetPasswordAsync(
             string identifier,

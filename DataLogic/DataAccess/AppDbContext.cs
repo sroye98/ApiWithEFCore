@@ -35,6 +35,8 @@ namespace DataLogic.DataAccess
 
         public DbSet<AppUserToken> AppUserTokens { get; set; }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -60,6 +62,10 @@ namespace DataLogic.DataAccess
                     .WithOne(e => e.User)
                     .HasForeignKey(ur => ur.UserId)
                     .IsRequired();
+
+                b.HasMany(e => e.RefreshTokens)
+                    .WithOne(e => e.User)
+                    .HasForeignKey(ur => ur.UserId);
 
                 b.Property(u => u.UserName).HasMaxLength(256);
 

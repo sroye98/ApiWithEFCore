@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BusinessLogic.Entities;
 using BusinessLogic.Helpers;
 using BusinessLogic.Interfaces;
+using BusinessLogic.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -358,7 +359,7 @@ namespace BusinessLogic.Services
                     currentUser.Id,
                     currentUser.UserName,
                     currentUser.Email,
-                    roles != null ? roles.ToList() : null);
+                    roles?.ToList());
 
                 await _userManager.SetAuthenticationTokenAsync(
                     currentUser,
@@ -379,10 +380,12 @@ namespace BusinessLogic.Services
         /// </summary>
         /// <param name="identifier">User identifier</param>
         /// <param name="password">Password</param>
+        /// <param name="ipAddress">IP address</param>
         /// <returns></returns>
         public async Task<string> LoginAsync(
             string identifier,
-            string password)
+            string password,
+            string ipAddress)
         {
             try
             {
@@ -420,17 +423,15 @@ namespace BusinessLogic.Services
                 }
 
                 IList<string> roles = await _userManager.GetRolesAsync(currentUser);
-                string jwtToken = await _tokenService.GenerateToken(
-                    currentUser.Id,
-                    currentUser.UserName,
-                    currentUser.Email,
-                    roles != null ? roles.ToList() : null);
+                TokenResponse jwtToken = await _tokenService.GenerateTokens(
+                    currentUser,
+                    ipAddress);
 
                 await _userManager.SetAuthenticationTokenAsync(
                     currentUser,
                     _loginProvider,
                     _tokenName,
-                    jwtToken);
+                    jwtToken.JwtToken);
 
                 return jwtToken;
             }
@@ -613,6 +614,34 @@ namespace BusinessLogic.Services
             {
                 throw ex;
             }
+        }
+
+        public async Task RefreshToken(
+            string refreshToken,
+            string ipAddress)
+        {
+            try
+            {
+                AppUser user = await _userManager.Users
+                    .Include(m => m.RefreshTokens)
+                    .FirstOrDefaultAsync(m => m.RefreshTokens.Any(m => m.Token == refreshToken));
+
+                if (user == null)
+                {
+                    throw new Exception("User not registered");
+                }
+
+                await _tokenService.GenerateTokens(
+                    user,
+                    ipAddress);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
+
+            throw new NotImplementedException();
         }
 
         /// <summary>

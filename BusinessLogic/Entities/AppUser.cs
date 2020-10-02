@@ -23,5 +23,7 @@ namespace BusinessLogic.Entities
         public virtual ICollection<AppUserToken> Tokens { get; set; }
 
         public virtual ICollection<AppUserRole> UserRoles { get; set; }
+
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; }    
     }
 }
