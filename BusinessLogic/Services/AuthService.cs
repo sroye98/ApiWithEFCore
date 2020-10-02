@@ -22,17 +22,20 @@ namespace BusinessLogic.Services
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
         private readonly ICommunicationService _communicationService;
+        private readonly ITokenService _tokenService;
 
         public AuthService(
             IHttpContextAccessor httpContext,
             SignInManager<AppUser> signInManager,
             UserManager<AppUser> userManager,
-            ICommunicationService communicationService)
+            ICommunicationService communicationService,
+            ITokenService tokenService)
         {
             _httpContext = httpContext;
             _signInManager = signInManager;
             _userManager = userManager;
             _communicationService = communicationService;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -350,8 +353,12 @@ namespace BusinessLogic.Services
                     throw new Exception("Invalid token");
                 }
 
-                //TODO: Generate Token
-                string jwtToken = string.Empty;
+                IList<string> roles = await _userManager.GetRolesAsync(currentUser);
+                string jwtToken = await _tokenService.GenerateToken(
+                    currentUser.Id,
+                    currentUser.UserName,
+                    currentUser.Email,
+                    roles != null ? roles.ToList() : null);
 
                 await _userManager.SetAuthenticationTokenAsync(
                     currentUser,
@@ -412,8 +419,12 @@ namespace BusinessLogic.Services
                     throw new Exception("Required 2 Form Authentication");
                 }
 
-                //TODO: Generate Token
-                string jwtToken = string.Empty;
+                IList<string> roles = await _userManager.GetRolesAsync(currentUser);
+                string jwtToken = await _tokenService.GenerateToken(
+                    currentUser.Id,
+                    currentUser.UserName,
+                    currentUser.Email,
+                    roles != null ? roles.ToList() : null);
 
                 await _userManager.SetAuthenticationTokenAsync(
                     currentUser,

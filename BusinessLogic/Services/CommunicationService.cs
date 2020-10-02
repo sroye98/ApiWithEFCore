@@ -10,13 +10,19 @@ namespace BusinessLogic.Services
         {
         }
 
-        public Task SendEmail(string toAddress, string fromAddress, string subject, string body)
+        public Task SendEmail(
+            string toAddress,
+            string fromAddress,
+            string subject,
+            string body)
         {
             //TODO: Choose Email Provider & Code for Email
             throw new NotImplementedException();
         }
 
-        public Task SendSMS(string toPhoneNumber, string message)
+        public Task SendSMS(
+            string toPhoneNumber,
+            string message)
         {
             //TODO: Choose SMS Provider & Code for SMS
             throw new NotImplementedException();
