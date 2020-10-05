@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 
-namespace BusinessLogic.Entities
+namespace DataAccess.Entities
 {
     public class AppRole : IdentityRole<Guid>
     {

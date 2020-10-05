@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BusinessLogic.Models;
 
 namespace BusinessLogic.Interfaces
 {
@@ -31,11 +32,12 @@ namespace BusinessLogic.Interfaces
             string emailMessage,
             Dictionary<string, string> emailMessageVariables);
 
-        Task<string> Login2FAAsync(
+        Task<TokenResponse> Login2FAAsync(
             string token,
-            string identifier);
+            string identifier,
+            string ipAddress);
 
-        Task<string> LoginAsync(
+        Task<TokenResponse> LoginAsync(
             string identifier,
             string password,
             string ipAddress);
@@ -49,7 +51,6 @@ namespace BusinessLogic.Interfaces
             Dictionary<string, string> emailSubjectVariables,
             string emailMessage,
             Dictionary<string, string> emailMessageVariables,
-            string phoneUrlTemplate,
             string phoneMessage,
             Dictionary<string, string> phoneMessageVariables,
             string email,

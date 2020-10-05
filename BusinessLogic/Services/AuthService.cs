@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using BusinessLogic.Entities;
 using BusinessLogic.Helpers;
 using BusinessLogic.Interfaces;
 using BusinessLogic.Models;
+using DataAccess.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -330,9 +330,10 @@ namespace BusinessLogic.Services
         /// <param name="token">Generated token</param>
         /// <param name="identifier">User identifier</param>
         /// <returns></returns>
-        public async Task<string> Login2FAAsync(
+        public async Task<TokenResponse> Login2FAAsync(
             string token,
-            string identifier)
+            string identifier,
+            string ipAddress)
         {
             try
             {
@@ -354,18 +355,15 @@ namespace BusinessLogic.Services
                     throw new Exception("Invalid token");
                 }
 
-                IList<string> roles = await _userManager.GetRolesAsync(currentUser);
-                string jwtToken = await _tokenService.GenerateToken(
-                    currentUser.Id,
-                    currentUser.UserName,
-                    currentUser.Email,
-                    roles?.ToList());
+                TokenResponse jwtToken = await _tokenService.GenerateTokens(
+                    currentUser,
+                    ipAddress);
 
                 await _userManager.SetAuthenticationTokenAsync(
                     currentUser,
                     _loginProvider,
                     _tokenName,
-                    jwtToken);
+                    jwtToken.JwtToken);
 
                 return jwtToken;
             }
@@ -382,7 +380,7 @@ namespace BusinessLogic.Services
         /// <param name="password">Password</param>
         /// <param name="ipAddress">IP address</param>
         /// <returns></returns>
-        public async Task<string> LoginAsync(
+        public async Task<TokenResponse> LoginAsync(
             string identifier,
             string password,
             string ipAddress)
@@ -422,7 +420,6 @@ namespace BusinessLogic.Services
                     throw new Exception("Required 2 Form Authentication");
                 }
 
-                IList<string> roles = await _userManager.GetRolesAsync(currentUser);
                 TokenResponse jwtToken = await _tokenService.GenerateTokens(
                     currentUser,
                     ipAddress);
@@ -513,7 +510,6 @@ namespace BusinessLogic.Services
             Dictionary<string, string> emailSubjectVariables,
             string emailMessage,
             Dictionary<string, string> emailMessageVariables,
-            string phoneUrlTemplate,
             string phoneMessage,
             Dictionary<string, string> phoneMessageVariables,
             string email,
@@ -590,20 +586,13 @@ namespace BusinessLogic.Services
                         currentUser,
                         phone);
 
-                    string phoneCallbackUrl = Utilities.ParseTemplate(
-                        phoneUrlTemplate,
-                        new Dictionary<string, string>
-                        {
-                            { "Token", phoneToken }
-                        });
-
                     phoneMessage = Utilities.ParseTemplate(
                         phoneMessage,
                         Utilities.AddParseVariables(
                             phoneMessageVariables,
                             new KeyValuePair<string, string>(
-                                "CallbackUrl",
-                                phoneMessage)));
+                                "Token",
+                                phoneToken)));
 
                     await _communicationService.SendSMS(
                         phone,
@@ -616,6 +605,12 @@ namespace BusinessLogic.Services
             }
         }
 
+        /// <summary>
+        /// Refresh Token
+        /// </summary>
+        /// <param name="refreshToken">Refresh token</param>
+        /// <param name="ipAddress">IP address</param>
+        /// <returns></returns>
         public async Task RefreshToken(
             string refreshToken,
             string ipAddress)

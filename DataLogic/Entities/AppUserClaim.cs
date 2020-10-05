@@ -1,11 +1,11 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity;
 
-namespace BusinessLogic.Entities
+namespace DataAccess.Entities
 {
-    public class AppUserLogin : IdentityUserLogin<Guid>
+    public class AppUserClaim : IdentityUserClaim<Guid>
     {
-        public AppUserLogin()
+        public AppUserClaim()
         {
         }
 

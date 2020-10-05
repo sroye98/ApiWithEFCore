@@ -3,12 +3,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessLogic.Entities
+namespace DataAccess.Entities
 {
     [Owned]
     public class RefreshToken
     {
-        [Key]
         [JsonIgnore]
         public Guid Id { get; set; }
 

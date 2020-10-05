@@ -5,9 +5,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using BusinessLogic.Entities;
 using BusinessLogic.Interfaces;
 using BusinessLogic.Models;
+using DataAccess.Entities;
+using DataLogic.DataAccess;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
@@ -20,10 +21,14 @@ namespace BusinessLogic.Services
         private readonly int _expirationTime = 5;
         private readonly string _issuer = "https://localhost";
         private readonly UserManager<AppUser> _userManager;
+        private readonly AppDbContext _context;
 
-        public TokenService(UserManager<AppUser> userManager)
+        public TokenService(
+            UserManager<AppUser> userManager,
+            AppDbContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<TokenResponse> GenerateTokens(
@@ -69,6 +74,9 @@ namespace BusinessLogic.Services
 
                 string token = handler.WriteToken(jwtToken);
                 RefreshToken refreshToken = generateRefreshToken(ipAddress);
+
+                _context.RefreshTokens.Add(refreshToken);
+                await _context.SaveChangesAsync();
 
                 return new TokenResponse
                 {

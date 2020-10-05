@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity;
 
-namespace BusinessLogic.Entities
+namespace DataAccess.Entities
 {
     public class AppUserRole : IdentityUserRole<Guid>
     {
