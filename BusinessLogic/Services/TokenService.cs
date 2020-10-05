@@ -7,28 +7,28 @@ using System.Text;
 using System.Threading.Tasks;
 using BusinessLogic.Interfaces;
 using BusinessLogic.Models;
-using DataAccess.Entities;
+using DataLogic.Entities;
 using DataLogic.DataAccess;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using BusinessLogic.Settings;
 
 namespace BusinessLogic.Services
 {
     public class TokenService : ITokenService
     {
-        //TODO: Change _key value
-        private readonly string _key = "e5n0EbWLpBjaoMEeAs7puqU6oH6fxHiwmYQHudS1blRox1x5gzuH54Z2KT7ryBZCJ4Mt2exueJtb2836cofgSt4vF8fRvwe254dX";
-        private readonly int _expirationTime = 5;
-        private readonly string _issuer = "https://localhost";
         private readonly UserManager<AppUser> _userManager;
         private readonly AppDbContext _context;
+        private readonly SecuritySettings _securitySettings;
 
         public TokenService(
             UserManager<AppUser> userManager,
-            AppDbContext context)
+            AppDbContext context,
+            SecuritySettings securitySettings)
         {
             _userManager = userManager;
             _context = context;
+            _securitySettings = securitySettings;
         }
 
         public async Task<TokenResponse> GenerateTokens(
@@ -59,22 +59,21 @@ namespace BusinessLogic.Services
                     claims.Add(new Claim(ClaimTypes.Role, role));
                 }
 
-                SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
+                SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_securitySettings.Key));
                 SigningCredentials credentials = new SigningCredentials(
                     securityKey,
                     SecurityAlgorithms.HmacSha256Signature);
                 JwtHeader header = new JwtHeader(credentials);
                 JwtSecurityToken jwtToken = new JwtSecurityToken(
-                    _issuer,
-                    _issuer,
+                    _securitySettings.Issuer,
+                    _securitySettings.Issuer,
                     claims,
-                    expires: DateTime.Now.AddMinutes(_expirationTime),
+                    expires: DateTime.Now.AddMinutes(_securitySettings.ExpirationMinutes),
                     signingCredentials: credentials);
                 JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-
                 string token = handler.WriteToken(jwtToken);
-                RefreshToken refreshToken = generateRefreshToken(ipAddress);
 
+                RefreshToken refreshToken = generateRefreshToken(ipAddress);
                 _context.RefreshTokens.Add(refreshToken);
                 await _context.SaveChangesAsync();
 

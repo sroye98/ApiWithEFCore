@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
-namespace DataAccess.Entities
+namespace DataLogic.Entities
 {
     [Owned]
     public class RefreshToken

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity;
 
-namespace DataAccess.Entities
+namespace DataLogic.Entities
 {
     public class AppRoleClaim : IdentityRoleClaim<Guid>
     {

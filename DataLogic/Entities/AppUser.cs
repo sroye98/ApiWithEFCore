@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 
-namespace DataAccess.Entities
+namespace DataLogic.Entities
 {
     public class AppUser : IdentityUser<Guid>
     {

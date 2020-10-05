@@ -20,7 +20,7 @@ namespace DataLogic.DataAccess
             var builder = new DbContextOptionsBuilder<AppDbContext>();
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            builder.UseSqlServer(connectionString);
+            builder.UseInMemoryDatabase("testdb");
 
             return new AppDbContext(builder.Options);
         }

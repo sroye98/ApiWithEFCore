@@ -32,12 +32,12 @@ namespace BusinessLogic.Interfaces
             string emailMessage,
             Dictionary<string, string> emailMessageVariables);
 
-        Task<TokenResponse> Login2FAAsync(
+        Task<LoginResponse> Login2FAAsync(
             string token,
             string identifier,
             string ipAddress);
 
-        Task<TokenResponse> LoginAsync(
+        Task<LoginResponse> LoginAsync(
             string identifier,
             string password,
             string ipAddress);
@@ -61,7 +61,7 @@ namespace BusinessLogic.Interfaces
             bool sendEmailConfirmation = true,
             bool sendPhoneConfirmation = true);
 
-        Task RefreshToken(
+        Task<TokenResponse> RefreshToken(
             string refreshToken,
             string ipAddress);
 
@@ -70,8 +70,11 @@ namespace BusinessLogic.Interfaces
             string newPassword,
             string token);
 
+        Task RevokeTokenAsync(
+            string refreshToken,
+            string ipAddress);
+
         Task Send2FATokenAsync(
-            string urlTemplate,
             string phoneMessage,
             Dictionary<string, string> phoneMessageVariables,
             string identifier);
@@ -86,7 +89,6 @@ namespace BusinessLogic.Interfaces
             string email);
 
         Task SendPhoneTokenAsync(
-            string urlTemplate,
             string phoneMessage,
             Dictionary<string, string> phoneMessageVariables,
             string phone);

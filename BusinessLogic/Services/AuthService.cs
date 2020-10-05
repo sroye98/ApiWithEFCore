@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using BusinessLogic.Helpers;
 using BusinessLogic.Interfaces;
 using BusinessLogic.Models;
-using DataAccess.Entities;
+using DataLogic.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -330,7 +330,7 @@ namespace BusinessLogic.Services
         /// <param name="token">Generated token</param>
         /// <param name="identifier">User identifier</param>
         /// <returns></returns>
-        public async Task<TokenResponse> Login2FAAsync(
+        public async Task<LoginResponse> Login2FAAsync(
             string token,
             string identifier,
             string ipAddress)
@@ -365,7 +365,12 @@ namespace BusinessLogic.Services
                     _tokenName,
                     jwtToken.JwtToken);
 
-                return jwtToken;
+                return new LoginResponse
+                {
+                    EmailAddress = currentUser.Email,
+                    UserName = currentUser.UserName,
+                    Tokens = jwtToken
+                };
             }
             catch (Exception ex)
             {
@@ -380,7 +385,7 @@ namespace BusinessLogic.Services
         /// <param name="password">Password</param>
         /// <param name="ipAddress">IP address</param>
         /// <returns></returns>
-        public async Task<TokenResponse> LoginAsync(
+        public async Task<LoginResponse> LoginAsync(
             string identifier,
             string password,
             string ipAddress)
@@ -430,7 +435,12 @@ namespace BusinessLogic.Services
                     _tokenName,
                     jwtToken.JwtToken);
 
-                return jwtToken;
+                return new LoginResponse
+                {
+                    EmailAddress = currentUser.Email,
+                    UserName = currentUser.UserName,
+                    Tokens = jwtToken
+                };
             }
             catch (Exception ex)
             {
@@ -611,7 +621,7 @@ namespace BusinessLogic.Services
         /// <param name="refreshToken">Refresh token</param>
         /// <param name="ipAddress">IP address</param>
         /// <returns></returns>
-        public async Task RefreshToken(
+        public async Task<TokenResponse> RefreshToken(
             string refreshToken,
             string ipAddress)
         {
@@ -626,9 +636,11 @@ namespace BusinessLogic.Services
                     throw new Exception("User not registered");
                 }
 
-                await _tokenService.GenerateTokens(
+                TokenResponse tokenResponse = await _tokenService.GenerateTokens(
                     user,
                     ipAddress);
+
+                return tokenResponse;
             }
             catch (Exception ex)
             {
@@ -679,6 +691,45 @@ namespace BusinessLogic.Services
         }
 
         /// <summary>
+        /// Revoke Token
+        /// </summary>
+        /// <param name="refreshToken"></param>
+        /// <param name="ipAddress"></param>
+        /// <returns></returns>
+        public async Task RevokeTokenAsync(
+            string refreshToken,
+            string ipAddress)
+        {
+            try
+            {
+                AppUser user = await _userManager.Users
+                    .Include(m => m.RefreshTokens)
+                    .FirstOrDefaultAsync(m => m.RefreshTokens.Any(m => m.Token == refreshToken));
+
+                if (user == null)
+                {
+                    throw new Exception("User not registered");
+                }
+
+                var refreshTokenObj = user.RefreshTokens.Single(x => x.Token == refreshToken);
+
+                if (!refreshTokenObj.IsActive)
+                {
+                    throw new Exception("Refresh token not active");
+                }
+
+                refreshTokenObj.Revoked = DateTime.UtcNow;
+                refreshTokenObj.RevokedByIp = ipAddress;
+
+                await _userManager.UpdateAsync(user);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
         /// Send 2 Form Authentication
         /// </summary>
         /// <param name="urlTemplate"></param>
@@ -687,7 +738,6 @@ namespace BusinessLogic.Services
         /// <param name="identifier"></param>
         /// <returns></returns>
         public async Task Send2FATokenAsync(
-            string urlTemplate,
             string phoneMessage,
             Dictionary<string, string> phoneMessageVariables,
             string identifier)
@@ -706,20 +756,13 @@ namespace BusinessLogic.Services
                     currentUser,
                     _twoFactorTokenProvider);
 
-                string phoneCallbackUrl = Utilities.ParseTemplate(
-                    urlTemplate,
-                    new Dictionary<string, string>
-                    {
-                            { "Token", token }
-                    });
-
                 phoneMessage = Utilities.ParseTemplate(
                     phoneMessage,
                     Utilities.AddParseVariables(
                         phoneMessageVariables,
                         new KeyValuePair<string, string>(
-                            "CallbackUrl",
-                            phoneMessage)));
+                            "Token",
+                            token)));
 
                 await _communicationService.SendSMS(
                     currentUser.PhoneNumber,
@@ -802,7 +845,6 @@ namespace BusinessLogic.Services
         /// <param name="phone"></param>
         /// <returns></returns>
         public async Task SendPhoneTokenAsync(
-            string urlTemplate,
             string phoneMessage,
             Dictionary<string, string> phoneMessageVariables,
             string phone)
@@ -820,20 +862,13 @@ namespace BusinessLogic.Services
                     currentUser,
                     _twoFactorTokenProvider);
 
-                string phoneCallbackUrl = Utilities.ParseTemplate(
-                    urlTemplate,
-                    new Dictionary<string, string>
-                    {
-                            { "Token", token }
-                    });
-
                 phoneMessage = Utilities.ParseTemplate(
                     phoneMessage,
                     Utilities.AddParseVariables(
                         phoneMessageVariables,
                         new KeyValuePair<string, string>(
-                            "CallbackUrl",
-                            phoneMessage)));
+                            "Token",
+                            token)));
 
                 await _communicationService.SendSMS(
                     phone,

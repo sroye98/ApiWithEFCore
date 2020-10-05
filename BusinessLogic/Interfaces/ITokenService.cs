@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using BusinessLogic.Models;
-using DataAccess.Entities;
+using DataLogic.Entities;
 
 namespace BusinessLogic.Interfaces
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using DataAccess.Entities;
+using DataLogic.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
