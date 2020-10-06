@@ -556,9 +556,12 @@ namespace BusinessLogic.Services
                     throw new Exception("User was not registered");
                 }
 
-                identityResult = await _userManager.AddToRoleAsync(
-                    newUser,
-                    role);
+                if (!string.IsNullOrEmpty(role))
+                {
+                    identityResult = await _userManager.AddToRoleAsync(
+                        newUser,
+                        role);
+                }
 
                 if (sendEmailConfirmation)
                 {
@@ -635,6 +638,18 @@ namespace BusinessLogic.Services
                 {
                     throw new Exception("User not registered");
                 }
+
+                var refreshTokenObj = user.RefreshTokens.Single(x => x.Token == refreshToken);
+
+                if (!refreshTokenObj.IsActive)
+                {
+                    throw new Exception("Refresh token is not active");
+                }    
+
+                refreshTokenObj.Revoked = DateTime.UtcNow;
+                refreshTokenObj.RevokedByIp = ipAddress;
+                refreshTokenObj.ReplacedByToken = refreshToken;
+                await _userManager.UpdateAsync(user);
 
                 TokenResponse tokenResponse = await _tokenService.GenerateTokens(
                     user,

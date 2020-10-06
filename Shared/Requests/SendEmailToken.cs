@@ -10,7 +10,7 @@ namespace Shared.Requests
         {
         }
 
-        [Required, RegularExpression(@".*[[TOKEN]]$", ErrorMessage = "Must contain [[TOKEN]] in the Url")]
+        [Required, RegularExpression(@"\[\[(TOKEN)\]\]", ErrorMessage = "Must contain [[TOKEN]] in the Url")]
         public string EmailUrlTemplate { get; set; }
 
         [Required, EmailAddress, DataType(DataType.EmailAddress)]
@@ -21,7 +21,7 @@ namespace Shared.Requests
 
         public Dictionary<string, string> EmailSubjectVariables { get; set; }
 
-        [Required, RegularExpression(@".*[[CALLBACKURL]]$", ErrorMessage = "Must contain [[CALLBACKURL]] in the Email Message")]
+        [Required, RegularExpression(@"\[\[(CALLBACKURL)\]\]", ErrorMessage = "Must contain [[CALLBACKURL]] in the Email Message")]
         public string EmailMessage { get; set; }
 
         public Dictionary<string, string> EmailMessageVariables { get; set; }

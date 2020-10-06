@@ -1,14 +1,9 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
 
 namespace DataLogic.Entities
 {
-    [Owned]
     public class RefreshToken
     {
-        [JsonIgnore]
         public Guid Id { get; set; }
 
         public string Token { get; set; }

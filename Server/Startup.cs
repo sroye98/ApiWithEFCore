@@ -1,51 +1,49 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using DataLogic.Entities;
+using System.Text;
+using BusinessLogic.Interfaces;
+using BusinessLogic.Services;
+using BusinessLogic.Settings;
 using DataLogic.DataAccess;
+using DataLogic.Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Server.Filters;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using BusinessLogic.Settings;
-using BusinessLogic.Services;
-using BusinessLogic.Interfaces;
+using Microsoft.OpenApi.Models;
+using Server.Filters;
 
 namespace Server
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
+            Environment = environment;
         }
 
         public IConfiguration Configuration { get; }
 
+        public IWebHostEnvironment Environment { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services, IWebHostEnvironment env)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
-                options.UseInternalServiceProvider(sp);
-
-                if (env.IsDevelopment())
+                if (Environment.IsDevelopment())
                 {
                     options.UseInMemoryDatabase("testdb");
                 }
                 else
                 {
+                    options.UseInternalServiceProvider(sp);
                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
                 }
             });
@@ -64,11 +62,11 @@ namespace Server
                 options.JsonSerializerOptions.IgnoreNullValues = true;
             });
 
-            var appSettingsSection = Configuration.GetSection("SecuritySettings");
-            services.Configure<SecuritySettings>(appSettingsSection);
+            SecuritySettings securitySettings = new SecuritySettings();
+            Configuration.Bind("SecuritySettings", securitySettings);
+            services.AddSingleton(securitySettings);
 
-            var appSettings = appSettingsSection.Get<SecuritySettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Key);
+            var key = Encoding.ASCII.GetBytes(securitySettings.Key);
 
             services.AddAuthentication(options =>
             {
@@ -89,11 +87,27 @@ namespace Server
                 };
             });
 
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "WEBAPI", Version = "v1" });
+                options.ResolveConflictingActions(a => a.First());
+                options.AddSecurityDefinition(
+                    "Bearer",
+                    new OpenApiSecurityScheme()
+                    {
+                        In = ParameterLocation.Header,
+                        Description = "Please enter into field the work 'Bearer' following by space and JWT",
+                        Name = "Authorization",
+                        Type = SecuritySchemeType.ApiKey
+                    });
+                options.OperationFilter<Filters.SecurityRequirementsOperationFilter>();
+            });
+
             services.AddHttpContextAccessor();
 
-            services.AddSingleton<IAuthService, AuthService>();
-            services.AddSingleton<ITokenService, TokenService>();
-            services.AddSingleton<ICommunicationService, CommunicationService>();
+            services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<ICommunicationService, CommunicationService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -115,6 +129,13 @@ namespace Server
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "WEBAPI V1");
+                options.RoutePrefix = string.Empty;
+            });
 
             app.UseEndpoints(endpoints =>
             {

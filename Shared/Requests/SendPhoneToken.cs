@@ -10,7 +10,7 @@ namespace Shared.Requests
         {
         }
 
-        [Required, RegularExpression(@".*[[TOKEN]]$", ErrorMessage = "Must contain [[TOKEN]] in the Phone Message")]
+        [Required, RegularExpression(@"\[\[(TOKEN)\]\]", ErrorMessage = "Must contain [[TOKEN]] in the Phone Message")]
         public string PhoneMessage { get; set; }
 
         public Dictionary<string, string> PhoneMessageVariables { get; set; }

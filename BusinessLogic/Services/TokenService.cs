@@ -12,6 +12,7 @@ using DataLogic.DataAccess;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using BusinessLogic.Settings;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLogic.Services
 {
@@ -74,6 +75,8 @@ namespace BusinessLogic.Services
                 string token = handler.WriteToken(jwtToken);
 
                 RefreshToken refreshToken = generateRefreshToken(ipAddress);
+                refreshToken.User = user;
+
                 _context.RefreshTokens.Add(refreshToken);
                 await _context.SaveChangesAsync();
 
