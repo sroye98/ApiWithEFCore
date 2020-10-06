@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BusinessLogic.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Shared.Requests;
@@ -22,6 +23,7 @@ namespace Server.Controllers
             _authService = authService;
         }
 
+        [Authorize]
         [HttpPut("ChangeEmail")]
         public async Task<IActionResult> ChangeEmailAsync([FromBody] ChangeEmail payload)
         {
@@ -37,6 +39,7 @@ namespace Server.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("ChangePassword")]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePassword payload)
         {
@@ -54,6 +57,7 @@ namespace Server.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("ChangeUsername")]
         public async Task<IActionResult> ChangeUsernameAsync([FromBody] ChangeUserName payload)
         {
