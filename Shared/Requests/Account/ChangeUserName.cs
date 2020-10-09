@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Shared.Requests
+namespace Shared.Requests.Account
 {
     public class ChangeUserName
     {

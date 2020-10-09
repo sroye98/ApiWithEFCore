@@ -22,5 +22,8 @@
     <Folder Include="Entities\" />
     <Folder Include="Migrations\" />
     <Folder Include="Scripts\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
 </Project>

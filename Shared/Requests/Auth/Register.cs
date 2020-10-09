@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Shared.Requests
+namespace Shared.Requests.Auth
 {
-    public class SendEmailToken
+    public class Register
     {
-        public SendEmailToken()
+        public Register()
         {
         }
 
@@ -26,7 +26,29 @@ namespace Shared.Requests
 
         public Dictionary<string, string> EmailMessageVariables { get; set; }
 
+        [Required, RegularExpression(@"\[\[(TOKEN)\]\]", ErrorMessage = "Must contain [[TOKEN]] in the Phone Message")]
+        public string PhoneMessage { get; set; }
+
+        public Dictionary<string, string> PhoneMessageVariables { get; set; }
+
         [Required, EmailAddress, DataType(DataType.EmailAddress)]
         public string Email { get; set; }
+
+        [Required, Phone, DataType(DataType.PhoneNumber)]
+        public string Phone { get; set; }
+
+        [Required]
+        public string UserName { get; set; }
+
+        [Required]
+        public string Password { get; set; }
+
+        public string Role { get; set; }
+
+        [Required]
+        public bool SendEmailConfirmation { get; set; } = true;
+
+        [Required]
+        public bool SendPhoneConfirmation { get; set; } = true;
     }
 }

@@ -1,18 +1,15 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Shared.Requests
+namespace Shared.Requests.Auth
 {
-    public class Login2FA
+    public class RefreshToken
     {
-        public Login2FA()
+        public RefreshToken()
         {
         }
 
         [Required]
         public string Token { get; set; }
-
-        [Required]
-        public string Identifier { get; set; }
     }
 }
